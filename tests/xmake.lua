@@ -1,0 +1,6 @@
+add_requires("gtest")
+target("test")
+  set_kind("binary")
+  add_files("*.cpp")
+  add_deps("envoy.lib")
+  add_packages("gtest")
