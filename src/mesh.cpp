@@ -32,14 +32,14 @@ TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
 
       // extract position
       mesh.vertex_positions = std::span{
-          resource.alloc<float3[], 16>(mesh.num_vertices), mesh.num_vertices};
+          resource.alloc<vec3[], 16>(mesh.num_vertices), mesh.num_vertices};
       reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
                                 mesh.vertex_positions.data());
 
       // extract normal
       if (reader.find_normal(indexes)) {
         mesh.vertex_normals = std::span{
-            resource.alloc<float3[], 16>(mesh.num_vertices), mesh.num_vertices};
+            resource.alloc<vec3[], 16>(mesh.num_vertices), mesh.num_vertices};
         reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
                                   mesh.vertex_normals.data());
         Info("normal found in ply file");
@@ -50,8 +50,7 @@ TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
       // extract UV
       if (reader.find_texcoord(indexes)) {
         mesh.vertex_uv = std::span{
-            resource.alloc<float2[], 16>(mesh.num_vertices), mesh.num_vertices};
-        // mesh->uv = std::make_unique<Vector2f[]>(mesh->nVert);
+            resource.alloc<vec2[], 16>(mesh.num_vertices), mesh.num_vertices};
         reader.extract_properties(indexes, 2, miniply::PLYPropertyType::Float,
                                   mesh.vertex_uv.data());
       }
@@ -62,7 +61,6 @@ TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
       mesh.num_indices = reader.num_rows() * 3;
       mesh.indices = std::span{resource.alloc<uint32_t[], 16>(mesh.num_indices),
                                mesh.num_indices};
-      // mesh->ind = std::make_unique<int[]>(mesh->nInd);
       reader.extract_properties(face_idxs, 3, miniply::PLYPropertyType::Int,
                                 mesh.indices.data());
       got_faces = true;
