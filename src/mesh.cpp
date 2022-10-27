@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-#include "common.h"
+#include "envoy_common.h"
 #include "resource_manager.h"
 
 EVY_NAMESPACE_BEGIN

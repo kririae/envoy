@@ -1,5 +1,6 @@
-#include "common.h"
+#include "envoy_common.h"
 #include "geometry.h"
+#include "intersector.h"
 #include "lru.h"
 #include "mesh.h"
 #include "resource_manager.h"

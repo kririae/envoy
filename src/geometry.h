@@ -1,7 +1,7 @@
 #ifndef __GEOMETRY_H__
 #define __GEOMETRY_H__
 
-#include "common.h"
+#include "envoy_common.h"
 #include "math_aliases.h"
 
 EVY_NAMESPACE_BEGIN
@@ -14,12 +14,13 @@ private:
   // upper: <[BBox_0.upper.x, ], [BBox_0.upper.y, ], [BBox_0.upper.z]>
   Vec3vf lower, upper;
 };
+
 /**
  * @brief Vectorized Triangles
  */
 class TriangleV {
 public:
-  using vfloat_type                 = typename Vec3vf::value_type;
+  using vfloat_type                 = typename vec_type<Vec3vf>::value_type;
   static constexpr std::size_t size = vfloat_type::size;
 
   EVY_FORCEINLINE TriangleV() = default;

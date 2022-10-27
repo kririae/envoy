@@ -1,10 +1,11 @@
 #ifndef __PLYMESH_H__
 #define __PLYMESH_H__
 
+#include <cstddef>
 #include <span>
 #include <string>
 
-#include "common.h"
+#include "envoy_common.h"
 
 EVY_NAMESPACE_BEGIN
 
@@ -16,6 +17,12 @@ struct TriangleMesh {
   std::span<Vec3f>    vertex_positions;
   std::span<Vec3f>    vertex_normals;
   std::span<Vec2f>    vertex_uv;
+};
+
+struct SubTriangleMesh {
+  std::size_t         num_indices, num_vertices;
+  std::span<uint32_t> indices;
+  TriangleMesh       *triangle_mesh;
 };
 
 TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource);
