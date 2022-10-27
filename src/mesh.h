@@ -1,15 +1,13 @@
 #ifndef __PLYMESH_H__
 #define __PLYMESH_H__
 
-#include <miniply.h>
-
 #include <span>
 #include <string>
 
 #include "envoy.h"
-#include "resource_manager.h"
 
 EVY_NAMESPACE_BEGIN
+class GResource;
 
 struct TriangleMesh {
   std::size_t         num_indices, num_vertices;

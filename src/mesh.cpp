@@ -1,9 +1,10 @@
 #include "mesh.h"
 
+#include <miniply.h>
+
 #include <filesystem>
 
 #include "envoy.h"
-#include "linalg.h"
 #include "resource_manager.h"
 
 EVY_NAMESPACE_BEGIN

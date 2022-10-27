@@ -6,11 +6,6 @@
 
 #include <filesystem>
 
-#if 0
-#include "linalg.h"
-using namespace linalg::aliases;
-#endif
-
 #include <glm/common.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
