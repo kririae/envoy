@@ -1,5 +1,5 @@
-#include <fmt/format.h>
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+
 #include "lru.h"
 
 using namespace envoy;

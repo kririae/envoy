@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-#include "envoy.h"
+#include "common.h"
 #include "resource_manager.h"
 
 EVY_NAMESPACE_BEGIN
@@ -33,14 +33,15 @@ TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
 
       // extract position
       mesh.vertex_positions = std::span{
-          resource.alloc<vec3[], 16>(mesh.num_vertices), mesh.num_vertices};
+          resource.alloc<Vector3f[], 16>(mesh.num_vertices), mesh.num_vertices};
       reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
                                 mesh.vertex_positions.data());
 
       // extract normal
       if (reader.find_normal(indexes)) {
-        mesh.vertex_normals = std::span{
-            resource.alloc<vec3[], 16>(mesh.num_vertices), mesh.num_vertices};
+        mesh.vertex_normals =
+            std::span{resource.alloc<Vector3f[], 16>(mesh.num_vertices),
+                      mesh.num_vertices};
         reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
                                   mesh.vertex_normals.data());
         Info("normal found in ply file");
@@ -50,8 +51,9 @@ TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
 
       // extract UV
       if (reader.find_texcoord(indexes)) {
-        mesh.vertex_uv = std::span{
-            resource.alloc<vec2[], 16>(mesh.num_vertices), mesh.num_vertices};
+        mesh.vertex_uv =
+            std::span{resource.alloc<Vector2f[], 16>(mesh.num_vertices),
+                      mesh.num_vertices};
         reader.extract_properties(indexes, 2, miniply::PLYPropertyType::Float,
                                   mesh.vertex_uv.data());
       }
