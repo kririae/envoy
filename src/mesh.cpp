@@ -9,7 +9,7 @@
 
 EVY_NAMESPACE_BEGIN
 
-// Code modified from https://github.com/vilya/miniply
+// Code adapted from https://github.com/vilya/miniply
 TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
   if (!std::filesystem::exists(path)) Error("file {} do not exists", path);
   miniply::PLYReader reader(path.c_str());

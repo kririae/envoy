@@ -6,6 +6,10 @@
 
 #include <filesystem>
 
+#include "xsimd/xsimd.hpp"
+
+namespace xs = xsimd;
+
 #if !defined(EVY_NAMESPACE_BEGIN)
 #define EVY_NAMESPACE_BEGIN namespace envoy {
 #endif
@@ -13,8 +17,6 @@
 #if !defined(EVY_NAMESPACE_END)
 #define EVY_NAMESPACE_END }  // namespace envoy
 #endif
-
-using Float = float;
 
 #define Info(...)              \
   do {                         \
@@ -42,7 +44,8 @@ using Float = float;
 #define EVY_TEST_ASSET_PATH "."
 #endif
 
-inline std::filesystem::path __get_asset_path(const std::string &asset_name) {
+EVY_FORCEINLINE std::filesystem::path __get_asset_path(
+    const std::string &asset_name) {
   const std::filesystem::path asset_path = EVY_TEST_ASSET_PATH;
   return asset_path / asset_name;
 }

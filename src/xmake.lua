@@ -4,12 +4,12 @@ add_requires("fmt", "spdlog", "tbb", "glm", "pacman::cgal")
 add_requires("boost")
 
 -- Specific Requirements
-add_requires("miniply master")
+add_requires("miniply master", "xsimd")
 
 target("envoy.lib")
 	set_kind("static")
 	add_packages("fmt", "spdlog", "miniply", { public = true })
-	add_packages("tbb", "pacman::cgal", { public = true })
+	add_packages("tbb", "pacman::cgal", "xsimd", { public = true })
 	add_files("mesh.cpp")
 	add_includedirs(os.scriptdir(), { public = true })
 

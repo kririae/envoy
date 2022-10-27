@@ -28,9 +28,31 @@ using Vector4i = glm::ivec4;
 
 using Matrix4f = glm::mat4;
 
+/// a subset of glm's implementation, accepting only GlmVector
+
 template <detail_::GlmVector T>
-EVY_FORCEINLINE auto Dot(const T &x, const T &y) -> T {
+EVY_FORCEINLINE decltype(auto) Length(const T &x) {
+  return glm::length(x);
+}
+
+template <detail_::GlmVector T>
+EVY_FORCEINLINE decltype(auto) Distance(const T &x, const T &y) {
+  return glm::distance(x, y);
+}
+
+template <detail_::GlmVector T>
+EVY_FORCEINLINE decltype(auto) Dot(const T &x, const T &y) {
   return glm::dot(x, y);
+}
+
+template <detail_::GlmVector T>
+EVY_FORCEINLINE decltype(auto) Cross(const T &x, const T &y) {
+  return glm::cross(x, y);
+}
+
+template <detail_::GlmVector T>
+EVY_FORCEINLINE decltype(auto) Normalize(const T &x) {
+  return glm::normalize(x);
 }
 
 EVY_NAMESPACE_END
