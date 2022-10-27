@@ -5,6 +5,7 @@
 #include <boost/container/list.hpp>
 #include <list>
 #include <optional>
+#include <type_traits>
 
 #include "envoy.h"
 
@@ -13,6 +14,7 @@ EVY_NAMESPACE_BEGIN
 /**
  * An simple LRU implementation in envoy
  * I'll not directly use boost's implementation since it is not thread-safe.
+ * items are not expected to be heavy
  * @note Keys should be different
  */
 template <typename TKey, typename TItem>
@@ -31,7 +33,9 @@ public:
   bool        empty() const { return m_map.empty(); }
   bool exists(const TKey &key) const { return m_map.find(key) != m_map.end(); }
 
-  void insert(const TKey &key, const TItem &item) {
+  template <typename T>
+  requires(std::is_convertible_v<std::decay_t<T>, TItem>) void insert(
+      const TKey &key, T &&item) {
     // check if the key already exists
     if (!exists(key)) {
       // insert the key
@@ -39,7 +43,7 @@ public:
         evict();
       }
 
-      m_list.push_front(std::make_pair(key, item));
+      m_list.emplace_front(key, std::forward<T>(item));
       m_map[key] = m_list.begin();
     }
   }
@@ -51,7 +55,7 @@ public:
     } else {
       // value->second: the iteration
       m_list.splice(m_list.begin(), m_list, value->second);
-      return value->second->second; // the TItem
+      return value->second->second;  // the TItem
     }
   }
 

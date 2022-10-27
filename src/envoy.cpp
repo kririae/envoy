@@ -1,4 +1,5 @@
 #include "common.h"
+#include "geometry.h"
 #include "lru.h"
 #include "mesh.h"
 #include "resource_manager.h"
