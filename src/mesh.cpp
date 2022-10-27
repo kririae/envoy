@@ -33,14 +33,14 @@ TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
 
       // extract position
       mesh.vertex_positions = std::span{
-          resource.alloc<Vector3f[], 16>(mesh.num_vertices), mesh.num_vertices};
+          resource.alloc<Vec3f[], 16>(mesh.num_vertices), mesh.num_vertices};
       reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
                                 mesh.vertex_positions.data());
 
       // extract normal
       if (reader.find_normal(indexes)) {
         mesh.vertex_normals =
-            std::span{resource.alloc<Vector3f[], 16>(mesh.num_vertices),
+            std::span{resource.alloc<Vec3f[], 16>(mesh.num_vertices),
                       mesh.num_vertices};
         reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
                                   mesh.vertex_normals.data());
@@ -52,7 +52,7 @@ TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
       // extract UV
       if (reader.find_texcoord(indexes)) {
         mesh.vertex_uv =
-            std::span{resource.alloc<Vector2f[], 16>(mesh.num_vertices),
+            std::span{resource.alloc<Vec2f[], 16>(mesh.num_vertices),
                       mesh.num_vertices};
         reader.extract_properties(indexes, 2, miniply::PLYPropertyType::Float,
                                   mesh.vertex_uv.data());

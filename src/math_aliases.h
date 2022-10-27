@@ -2,10 +2,14 @@
 #define __MATH_ALIASES_H__
 
 #include <concepts>
+#include <glm/detail/qualifier.hpp>
 #include <glm/glm.hpp>
 #include <type_traits>
 
 #include "envoy.h"
+#include "xsimd/xsimd.hpp"
+
+namespace xs = xsimd;
 
 EVY_NAMESPACE_BEGIN
 
@@ -18,15 +22,31 @@ concept GlmVector = requires(T t) {
 // clang-format on
 }  // namespace detail_
 
-using Vector2f = glm::vec2;
-using Vector3f = glm::vec3;
-using Vector4f = glm::vec4;
+/**
+ * Aliases for glm and xsimd
+ */
+using Vec2f = glm::vec2;
+using Vec3f = glm::vec3;
+using Vec4f = glm::vec4;
 
-using Vector2i = glm::ivec2;
-using Vector3i = glm::ivec3;
-using Vector4i = glm::ivec4;
+using Vec2i = glm::ivec2;
+using Vec3i = glm::ivec3;
+using Vec4i = glm::ivec4;
 
-using Matrix4f = glm::mat4;
+using Mat4f = glm::mat4;
+
+using vfloat  = xsimd::batch<float>;
+using vdouble = xsimd::batch<double>;
+using vbool   = xsimd::batch<bool>;
+using vint    = xsimd::batch<int>;
+
+using Vec2vf = glm::vec<2, vfloat>;
+using Vec3vf = glm::vec<3, vfloat>;
+using Vec4vf = glm::vec<4, vfloat>;
+
+using Vec2vi = glm::vec<2, vint>;
+using Vec3vi = glm::vec<3, vint>;
+using Vec4vi = glm::vec<4, vint>;
 
 /// a subset of glm's implementation, accepting only GlmVector
 

@@ -6,10 +6,6 @@
 
 #include <filesystem>
 
-#include "xsimd/xsimd.hpp"
-
-namespace xs = xsimd;
-
 #if !defined(EVY_NAMESPACE_BEGIN)
 #define EVY_NAMESPACE_BEGIN namespace envoy {
 #endif
