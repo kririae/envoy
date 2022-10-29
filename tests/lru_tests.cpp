@@ -14,7 +14,7 @@ struct Destruct {
   ~Destruct() { ++get_counter_instance(); }
 };
 
-TEST(LRU, item_destruct) {
+TEST(lru, item_destruct) {
   LRU<int, Destruct> cache(2);
   Destruct           d1, d2, d3, d4;
   cache.insert(1, d1);
@@ -27,7 +27,7 @@ TEST(LRU, item_destruct) {
   EXPECT_EQ(get_counter_instance(), 2);
 }
 
-TEST(LRU, all) {
+TEST(lru, all) {
   LRU<int, float> cache(2);
   cache.insert(1, 1.0);
   cache.insert(2, 2.0);
