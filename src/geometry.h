@@ -1,9 +1,12 @@
 #ifndef __GEOMETRY_H__
 #define __GEOMETRY_H__
 
+#include <cstddef>
+
 #include "envoy.h"
 #include "envoy_common.h"
 #include "math_aliases.h"
+#include "zpp_bits.h"
 
 EVY_NAMESPACE_BEGIN
 
@@ -59,6 +62,13 @@ private:
  */
 class alignas(32) TriangleV {
 public:
+  friend zpp::bits::access;
+  constexpr static auto serialize(auto &archive, auto &self) {
+    std::span<std::byte> this_object{reinterpret_cast<std::byte *>(&self),
+                                     sizeof(TriangleV)};
+    return archive(this_object);
+  }
+
   using vfloat_type                 = typename vec_type<Vec3vf>::value_type;
   static constexpr std::size_t size = vfloat_type::size;
 

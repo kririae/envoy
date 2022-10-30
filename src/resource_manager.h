@@ -6,7 +6,8 @@
 
 #include <boost/container/flat_map.hpp>
 
-#include "envoy.h"
+#include "envoy_common.h"
+#include "pages.h"
 
 EVY_NAMESPACE_BEGIN
 
@@ -110,6 +111,13 @@ protected:
   tbb::cache_aligned_resource                                  m_upstream{
       oneapi::tbb::scalable_memory_resource()};
   std::pmr::unsynchronized_pool_resource m_mem_resource{&m_upstream};
+};
+
+// The naive implementation of Page Resource
+struct StaticPageResource {
+protected:
+  using ptr_t = void *;
+  boost::container::flat_map<uint64_t, ptr_t> m_pages;
 };
 
 EVY_NAMESPACE_END

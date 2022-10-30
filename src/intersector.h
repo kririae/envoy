@@ -104,6 +104,7 @@ EVY_FORCEINLINE bool PlueckerTriangleIntersect1(const TriangleV &vtriangle,
   const vfloat valid_thits = Select(vresult, vthit, vfloat{FLOAT_INF});
   thit                     = ReduceMin(valid_thits); /* out */
 
+  // TODO: optimize the filter
   ng.x = Filter(vresult, vng.x);  // yet reduce
   ng.y = Filter(vresult, vng.y);
   ng.z = Filter(vresult, vng.z);

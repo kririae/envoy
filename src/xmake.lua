@@ -5,12 +5,14 @@ add_requires("boost")
 
 -- Specific Requirements
 add_requires("miniply master", "linalg main", "xsimd")
+add_requires("zpp_bits v4.4.12", "lz4")
 
 target("envoy.core")
 	set_kind("static")
 	add_packages("fmt", "spdlog", "miniply", "linalg", { public = true })
+	add_packages("zpp_bits", "lz4", { public = true })
 	add_packages("tbb", "pacman::cgal", "xsimd", { public = true })
-	add_files("mesh.cpp")
+	add_files("mesh.cpp", "pages.cpp")
 	add_includedirs(os.scriptdir(), { public = true })
 
 target("envoy")
