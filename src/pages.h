@@ -7,8 +7,6 @@
 
 EVY_NAMESPACE_BEGIN
 
-struct TriangleV;
-
 constexpr uint32_t    PAGE_SHIFT = 12;
 constexpr std::size_t PAGE_SIZE  = (1 << PAGE_SHIFT);
 
@@ -45,8 +43,6 @@ public:
   uint64_t rm_page_id{0}; /* page id to track in resource_manager */
   T        elements[element_num];
 };
-
-using TrianglePage = SysPage<TriangleV>;
 
 EVY_NAMESPACE_END
 

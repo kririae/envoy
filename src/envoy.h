@@ -1,8 +1,10 @@
 #ifndef __ENVOY_H__
 #define __ENVOY_H__
 
-#include <fmt/core.h>
+// #include <fmt/core.h>
+// #include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/fmt/ostr.h>
 
 #include <filesystem>
 

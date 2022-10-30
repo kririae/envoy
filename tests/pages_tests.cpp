@@ -8,6 +8,8 @@
 
 using namespace envoy;
 
+using TrianglePage = SysPage<TriangleV>;
+
 TEST(pages, size) {
   TrianglePage page;
   EXPECT_EQ(sizeof(page), getpagesize());

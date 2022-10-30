@@ -64,18 +64,16 @@ class alignas(32) TriangleV {
 public:
   friend zpp::bits::access;
   constexpr static auto serialize(auto &archive, auto &self) {
-    std::span<std::byte> this_object{reinterpret_cast<std::byte *>(&self),
-                                     sizeof(TriangleV)};
-    return archive(this_object);
+    return archive(std::span{self}.as_bytes());
   }
 
   using vfloat_type                 = typename vec_type<Vec3vf>::value_type;
   static constexpr std::size_t size = vfloat_type::size;
 
   EVY_FORCEINLINE TriangleV() = default;
-  EVY_FORCEINLINE TriangleV(const Vec3vf &in_v0, const Vec3vf &in_v1,
-                            const Vec3vf &in_v2)
-      : m_v0(in_v0), m_v1(in_v1), m_v2(in_v2) {}
+  EVY_FORCEINLINE TriangleV(const vmask &valid, const Vec3vf &in_v0,
+                            const Vec3vf &in_v1, const Vec3vf &in_v2)
+      : m_v0(in_v0), m_v1(in_v1), m_v2(in_v2), m_valid(valid) {}
 
   EVY_FORCEINLINE Vec3vf v0() const { return m_v0; }
   EVY_FORCEINLINE Vec3vf v1() const { return m_v1; }

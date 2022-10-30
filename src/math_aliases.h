@@ -147,7 +147,7 @@ EVY_FORCEINLINE decltype(auto) Select(const TBool &cond, const TVec &a,
  */
 template <detail_::XsimdVector T>
 EVY_FORCEINLINE auto Filter(const vmask &valid, const T &a) {
-  // For now, a naive implementation
+  // TODO: For now, a naive implementation
   using value_type          = typename vec_type<T>::value_type;
   static constexpr int size = vec_type<T>::size;
 
@@ -157,7 +157,7 @@ EVY_FORCEINLINE auto Filter(const vmask &valid, const T &a) {
   b.store_unaligned(mask);
   a.store_unaligned(arr);
   for (int i = 0; i < size; ++i)
-    if (arr[i] == 1) return arr[i];
+    if (mask[i] == 1) return arr[i];
   return value_type{};
 }
 
@@ -226,6 +226,8 @@ using Vec2vi = linalg::vec<vint, 2>;
 using Vec3vi = linalg::vec<vint, 3>;
 using Vec4vi = linalg::vec<vint, 4>;
 
+using namespace linalg::ostream_overloads;
+
 constexpr float FLOAT_INF       = std::numeric_limits<float>::infinity();
 constexpr float FLOAT_MINUS_INF = -std::numeric_limits<float>::infinity();
 
@@ -258,6 +260,7 @@ EVY_FORCEINLINE decltype(auto) Normalize(const T &x) {
 
 template <detail_::LinalgVector T>
 EVY_FORCEINLINE decltype(auto) Length(const T &x) {
+  // TODO: general interpretation
   constexpr int vec_size = vec_type<T>::size;
   if constexpr (vec_size == 3) {
     return Sqrt(x.x * x.x + x.y * x.y + x.z * x.z);

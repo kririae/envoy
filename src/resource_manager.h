@@ -103,7 +103,7 @@ struct GResource {
     m_destructors.clear();
     m_mem_resource.release();
   }
-  void printStat() {}
+  void printStat() { Info("PrintStat() is not implemented yet"); }
 
 protected:
   using ptr_t = void *;

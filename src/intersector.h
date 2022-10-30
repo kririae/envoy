@@ -28,6 +28,7 @@ EVY_FORCEINLINE Vec3<T> StableTriangleNormal(const Vec3<T> &a, const Vec3<T> &b,
 
 /**
  * @brief Intersect TriangleV with a single ray
+ * @note Intel Embree's implementation
  */
 EVY_FORCEINLINE vmask PlueckerTriangleIntersect1(
     const vmask &valid_, const Vec3vf &v0, const Vec3vf &v1, const Vec3vf &v2,
@@ -56,7 +57,7 @@ EVY_FORCEINLINE vmask PlueckerTriangleIntersect1(
   if (None(valid)) return false;
 
   // Calculate geometry normal (not yet normalized)
-  const Vec3vf Ng  = detail_::StableTriangleNormal(e0, e1, e2);
+  const Vec3vf Ng  = Normalize(detail_::StableTriangleNormal(e0, e1, e2));
   const vfloat den = Twice(Dot(Ng, d));
 
   // Depth test
