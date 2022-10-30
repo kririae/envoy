@@ -62,6 +62,9 @@ inline static std::span<TriangleV> CastMeshToTriangleV(TriangleMesh mesh,
   constexpr uint32_t stride = TriangleV::size;
   std::size_t        num_triangle_v =
       std::ceil(static_cast<double>(mesh.num_indices) / 3.0 / stride);
+  Info("mesh.num_triangles {}", num_triangle_v * stride);
+  Info("mesh.num_packed_triangles {}", num_triangle_v);
+  Info("packed triangle width {}", stride);
   std::span<TriangleV> result =
       std::span{resource.alloc<TriangleV[]>(num_triangle_v), num_triangle_v};
   for (std::size_t i_indices = 0, i_triangle_v = 0;
@@ -82,11 +85,13 @@ int main() {
   auto      mesh = MakeTriangleMesh(__get_asset_path("sphere.ply"), resource);
   auto      triangles = CastMeshToTriangleV(mesh, resource);
 
-  auto      bvh = SerialBvh(triangles, resource);
+  auto bvh = SerialBvh(triangles, resource);
+  bvh.build();
   BvhRayHit rayhit;
   rayhit.ray_o = Vec3f{0.0};
   rayhit.ray_d = Vec3f{1.0, 0.0, 0.0};
   bool _       = bvh.intersect(rayhit);
   Info("{} {} {}", _, rayhit.tfar, rayhit.hit_ng.x);
+
   return 0;
 }
