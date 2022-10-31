@@ -1,6 +1,6 @@
-add_requires("gtest")
+add_requires("gtest", {system = false})
 target("test")
   set_kind("binary")
+  add_packages("gtest")
   add_files("*.cpp")
   add_deps("envoy.core")
-  add_packages("gtest")
