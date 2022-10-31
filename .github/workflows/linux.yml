@@ -22,19 +22,37 @@ jobs:
         with:
           xmake-version: latest
       - name: Cache xmake packages and compilation
+        id: cache-xmake-packages
         uses: actions/cache@v3
         env:
-          cache-name: cache-envoy-xmake
+          cache-name: cache-xmake-packages
         with:
           path: |
-            ~/.xmake/cache
-            ~/.xmake/packages
+            /home/runner/.config/.xmake/cache/
+            /home/runner/.config/.xmake/packages/
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/xmake.lua') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+      - name: Cache test assets
+        id: cache-envoy-test-assets
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-envoy-test-assets
+        with:
+          path: /home/runner/work/envoy/envoy/assets/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}
       - name: XMake config
-        run: 'xmake config --clean --yes' 
+        run: 'xmake config --clean --yes -v'
       - name: XMake build
         run: 'xmake build --warning --yes -vD'
+      - name: XMake fetch test assets
+        if: steps.cache-envoy-test-assets.outputs.cache-hit != 'true'
+        run: |
+          cd "/home/runner/work/envoy/envoy/assets/"
+          bash ./fetch_assets.sh
+      - name: XMake run tests
+        run: 'xmake r test'
+
