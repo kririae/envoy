@@ -33,8 +33,6 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/xmake.lua') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
       - name: Cache test assets
         id: cache-envoy-test-assets
         uses: actions/cache@v3
@@ -51,8 +49,8 @@ jobs:
       - name: XMake fetch test assets
         if: steps.cache-envoy-test-assets.outputs.cache-hit != 'true'
         run: |
-          cd "/home/runner/work/envoy/envoy/assets/"
-          bash ./fetch_assets.sh
+          cd /home/runner/work/envoy/envoy/assets/
+          bash ./fetch_assets.sh /home/runner/work/envoy/envoy/assets/
       - name: XMake run tests
         run: 'xmake r test'
 
