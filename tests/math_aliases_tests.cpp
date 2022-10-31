@@ -11,11 +11,13 @@ constexpr int size = vec_type<Vec3vf>::value_type::size;
 TEST(math_aliases, linalg_and_xsimd) {
   constexpr float eps = 1e-4;
 
-  Vec3vf vec;
+  const std::array<int, 8> floats{1, 2, 3, 4, 5, 6, 7, 8};
+  Vec3vf                   vec;
   // just like vec{1, 1, 1}, vec{2, 2, 2} ...
-  vec.x         = xs::batch<float, xs::avx2>{1, 2, 3, 4, 5, 6, 7, 8};
-  vec.y         = xs::batch<float, xs::avx2>{1, 2, 3, 4, 5, 6, 7, 8};
-  vec.z         = xs::batch<float, xs::avx2>{1, 2, 3, 4, 5, 6, 7, 8};
+  vec.x = vfloat::load_unaligned(floats.data());
+  vec.y = vfloat::load_unaligned(floats.data());
+  vec.z = vfloat::load_unaligned(floats.data());
+
   auto  vec_new = Normalize(vec);
   float x[size], y[size], z[size];
   vec_new.x.store_unaligned(x);

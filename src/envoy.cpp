@@ -5,6 +5,7 @@
 #include "lru.h"
 #include "mesh.h"
 #include "resource_manager.h"
+#include "stats.h"
 
 using namespace envoy;
 
@@ -47,9 +48,9 @@ inline static TriangleV CastIndicesToTriangleV(
   // vfloats[{x, y, z}][{1, ... simd_width}]
   for (int i = 0; i < 3; ++i) {
     const auto vfloats = get_vfloats(i);
-    v[i].x             = xs::load_unaligned(vfloats[0].data());
-    v[i].y             = xs::load_unaligned(vfloats[1].data());
-    v[i].z             = xs::load_unaligned(vfloats[2].data());
+    v[i].x             = vfloat::load_unaligned(vfloats[0].data());
+    v[i].y             = vfloat::load_unaligned(vfloats[1].data());
+    v[i].z             = vfloat::load_unaligned(vfloats[2].data());
   }
 
   return TriangleV(
@@ -92,6 +93,7 @@ int main() {
   rayhit.ray_d = Vec3f{1.0, 0.0, 0.0};
   bool _       = bvh.intersect(rayhit);
   Info("{} {} {}", _, rayhit.tfar, rayhit.hit_ng.x);
+  stats::Report();
 
   return 0;
 }

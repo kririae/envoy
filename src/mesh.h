@@ -9,6 +9,7 @@
 #include <string>
 
 #include "envoy_common.h"
+#include "pages.h"
 
 EVY_NAMESPACE_BEGIN
 
@@ -26,7 +27,6 @@ struct TriangleMesh {
 };
 
 struct SubTriangleMesh {
-  std::size_t         num_indices, num_vertices;
   std::span<uint32_t> indices;
   TriangleMesh       *triangle_mesh;
 };
@@ -40,6 +40,8 @@ private:
 };
 
 TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource);
+std::span<SysPage<TriangleV>> MakeTrianglePages(const TriangleMesh &mesh,
+                                                GResource          &resource);
 
 EVY_NAMESPACE_END
 

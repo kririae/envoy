@@ -54,23 +54,26 @@ struct vec_type<linalg::vec<T, M>> {
   static constexpr std::size_t size = M;
 };
 
-template <typename T>
-struct vec_type<xs::batch<T>> {
+template <typename T, typename A>
+struct vec_type<xs::batch<T, A>> {
   using value_type                  = T;
-  static constexpr std::size_t size = xs::batch<T>::size;
+  static constexpr std::size_t size = xs::batch<T, A>::size;
 };
 
 /// a wrapper for XSIMD's operators presented in
 /// https://xsimd.readthedocs.io/en/latest/api/reducer_index.html
+/// to make the code not that intrusive, we'll not specify the width as an
+/// template
+using default_arch = xsimd::avx;
 
 template <typename T>
 using vtype = xs::batch<T>;  // vectorized type
 
-using vfloat  = xs::batch<float>;
-using vint    = xs::batch<int>;
-using vdouble = xs::batch<double>;
-using vbool   = xs::batch<bool>;
-using vmask   = xs::batch<float>::batch_bool_type;
+using vfloat  = xs::batch<float, default_arch>;
+using vint    = xs::batch<int, default_arch>;
+using vdouble = xs::batch<double, default_arch>;
+using vbool   = xs::batch<bool, default_arch>;
+using vmask   = vfloat::batch_bool_type;
 
 template <detail_::XsimdVector T>
 EVY_FORCEINLINE decltype(auto) ReduceAdd(const T &x) {

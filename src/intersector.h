@@ -4,6 +4,7 @@
 #include "envoy_common.h"
 #include "geometry.h"
 #include "math_aliases.h"
+#include "stats.h"
 
 EVY_NAMESPACE_BEGIN
 
@@ -33,6 +34,8 @@ EVY_FORCEINLINE Vec3<T> StableTriangleNormal(const Vec3<T> &a, const Vec3<T> &b,
 EVY_FORCEINLINE vmask PlueckerTriangleIntersect1(
     const vmask &valid_, const Vec3vf &v0, const Vec3vf &v1, const Vec3vf &v2,
     const Vec3f &ray_o, const Vec3f &ray_d, vfloat &thit, Vec3vf &ng) {
+  stats::IncTriangleIntersectionTimes(vec_type<vfloat>::size);
+
   vmask        valid = valid_;
   const vfloat ulp   = std::numeric_limits<float>::epsilon();
   const vfloat zero{0.0};
