@@ -1,4 +1,4 @@
-add_requires("gtest", {system = false})
+add_requires("gtest", { system = false })
 target("test")
   set_kind("binary")
   add_packages("gtest")

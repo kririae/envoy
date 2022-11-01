@@ -5,6 +5,6 @@ add_vectorexts("avx", "avx2")
 
 includes("packages/*.lua")
 
-add_defines("EVY_TEST_ASSET_PATH=\"" .. path.join(os.projectdir(), "assets") .. "\"")
+add_defines('EVY_TEST_ASSET_PATH="' .. path.join(os.projectdir(), "assets") .. '"')
 includes("src")
 includes("tests")

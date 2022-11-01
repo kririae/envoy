@@ -4,7 +4,6 @@
 #include <linalg.h>
 
 #include <concepts>
-#include <glm/glm.hpp>
 #include <limits>
 #include <type_traits>
 
