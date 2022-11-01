@@ -1,6 +1,9 @@
 #ifndef __BVH_H__
 #define __BVH_H__
 
+#include <embree3/rtcore.h>
+#include <embree3/rtcore_geometry.h>
+
 #include "envoy.h"
 #include "envoy_common.h"
 #include "geometry.h"
@@ -10,7 +13,6 @@
 #include "resource_manager.h"
 
 EVY_NAMESPACE_BEGIN
-
 namespace detail_ {
 TriangleV            CastIndicesToTriangleV(const std::span<uint32_t> indices,
                                             const std::span<Vec3f>   &positions);
@@ -49,31 +51,46 @@ std::span<TriangleVPack> MakeTrianglePacksFromZOrderCurve(
 
 class BvhBase {
 public:
-  BvhBase(std::span<TriangleV> triangles, GResource &resource)
-      : triangles(triangles), m_resource(resource) {}
   virtual ~BvhBase()                          = default;
   virtual void   build()                      = 0;
   virtual BBox3f getBound() const             = 0;
   virtual bool   intersect(BvhRayHit &rayhit) = 0;
-
-protected:
-  std::span<TriangleV> triangles;
-  const GResource     &m_resource;
 };
 
 class SerialBvh : public BvhBase {
 public:
-  SerialBvh(std::span<TriangleV> triangles, GResource &resource)
-      : BvhBase(triangles, resource) {}
+  SerialBvh(const TriangleMesh &mesh, GResource &resource)
+      : m_mesh(mesh),
+        m_resource(resource),
+        m_triangles(detail_::CastMeshToTriangleV(mesh, resource)) {}
   ~SerialBvh() override = default;
   BBox3f getBound() const override { return m_bound; }
   void   build() override;
   bool   intersect(BvhRayHit &rayhit) override;
 
 private:
-  BBox3f m_bound;
+  BBox3f               m_bound;
+  std::span<TriangleV> m_triangles;
+
+  const TriangleMesh &m_mesh;
+  const GResource    &m_resource;
+};
+
+class EmbreeBvh : public BvhBase {
+public:
+  EmbreeBvh(const TriangleMesh &mesh, GResource &resource);
+  ~EmbreeBvh() override;
+
+  BBox3f getBound() const override;
+  void   build() override;
+  bool   intersect(BvhRayHit &rayhit) override;
+
+private:
+  RTCDevice    m_device;
+  RTCScene     m_scene;
+  RTCGeometry  m_geom;
+  unsigned int m_geomID;
 };
 
 EVY_NAMESPACE_END
-
 #endif

@@ -236,6 +236,10 @@ using Vec2i = linalg::vec<int, 2>;
 using Vec3i = linalg::vec<int, 3>;
 using Vec4i = linalg::vec<int, 4>;
 
+using Vec2ui = linalg::vec<uint32_t, 2>;
+using Vec3ui = linalg::vec<uint32_t, 3>;
+using Vec4ui = linalg::vec<uint32_t, 4>;
+
 using Mat4f = linalg::mat<float, 4, 4>;
 
 using Vec2vf = linalg::vec<vfloat, 2>;
