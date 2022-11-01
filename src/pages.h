@@ -10,6 +10,12 @@ EVY_NAMESPACE_BEGIN
 constexpr uint32_t    PAGE_SHIFT = 12;
 constexpr std::size_t PAGE_SIZE  = (1 << PAGE_SHIFT);
 
+/**
+ * @brief An abstraction(view) for system page
+ *
+ * @tparam T The type to fill this page
+ * @tparam N Variable page size for different platforms
+ */
 template <typename T, std::size_t N = PAGE_SIZE>
 struct alignas(PAGE_SIZE) SysPage {
 public:

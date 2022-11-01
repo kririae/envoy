@@ -12,34 +12,32 @@ EVY_NAMESPACE_BEGIN
 namespace stats {
 
 template <typename T, typename S, typename... Ts>
-inline auto &get_accumulator_instance() {
+static auto &get_accumulator_instance() {
   static boost::accumulators::accumulator_set<T, Ts...> accumulator;
   return accumulator;
 }
 
+// intersector.h
 class EnvoyTriangleIntersectTimes {
 public:
   using features = boost::accumulators::features<boost::accumulators::tag::sum>;
 };
 
-EVY_FORCEINLINE void IncTriangleIntersectionTimes(std::size_t n = 1) {
-  auto &accumulator =
-      get_accumulator_instance<uint64_t, EnvoyTriangleIntersectTimes,
-                               EnvoyTriangleIntersectTimes::features>();
-  accumulator(n);
-}
+void     IncTriangleIntersectionTimes(std::size_t n = 1);
+uint64_t GetTriangleIntersectionTimes();
 
-EVY_FORCEINLINE uint64_t GetTriangleIntersectionTimes() {
-  auto &accumulator =
-      get_accumulator_instance<uint64_t, EnvoyTriangleIntersectTimes,
-                               EnvoyTriangleIntersectTimes::features>();
-  return boost::accumulators::sum(accumulator);
-}
+// resource_manager.h
+class EnvoyResourceAllocateInfo {
+public:
+  using features = boost::accumulators::features<boost::accumulators::tag::max,
+                                                 boost::accumulators::tag::mean,
+                                                 boost::accumulators::tag::sum>;
+};
 
-inline void Report() {
-  Info("SIMD width {}", vec_type<vfloat>::size);
-  Info("Intersection times {}", GetTriangleIntersectionTimes());
-}
+void           RecResourceAllocateInfo(std::size_t n);
+decltype(auto) GetResourceAllocateInfo();
+
+void Report();
 
 }  // namespace stats
 EVY_NAMESPACE_END

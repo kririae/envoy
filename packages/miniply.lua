@@ -4,13 +4,16 @@ package("miniply")
 
   on_install("linux", function(package)
     local configs = {}
-    io.writefile("xmake.lua", [[
-      add_rules("mode.release", "mode.debug")
-      target("miniply")
-        set_kind("$(kind)")
-        add_files("miniply.cpp")
-        add_headerfiles("miniply.h")
-    ]])
+    io.writefile(
+      "xmake.lua",
+      [[
+        add_rules("mode.release", "mode.debug")
+        target("miniply")
+          set_kind("$(kind)")
+          add_files("miniply.cpp")
+          add_headerfiles("miniply.h")
+      ]]
+    )
     if package:config("shared") then
       configs.kind = "shared"
     end

@@ -29,7 +29,7 @@ EVY_FORCEINLINE Vec3<T> StableTriangleNormal(const Vec3<T> &a, const Vec3<T> &b,
 
 /**
  * @brief Intersect TriangleV with a single ray
- * @note Intel Embree's implementation
+ * @see See Intel Embree's implementation
  */
 EVY_FORCEINLINE vmask PlueckerTriangleIntersect1(
     const vmask &valid_, const Vec3vf &v0, const Vec3vf &v1, const Vec3vf &v2,
@@ -80,7 +80,8 @@ EVY_FORCEINLINE vmask PlueckerTriangleIntersect1(
 }
 
 /**
- * Triangle Intersect Wrapper
+ * @brief Triangle Intersect Wrapper
+ * @see other PlueckerTriangleIntersect1
  */
 EVY_FORCEINLINE vmask PlueckerTriangleIntersect1(const TriangleV &vtriangle,
                                                  const Vec3f     &ray_o,
@@ -92,7 +93,10 @@ EVY_FORCEINLINE vmask PlueckerTriangleIntersect1(const TriangleV &vtriangle,
 }
 
 /**
- * Reduce the intersection result
+ * @brief PlueckerTriangleIntersect1() accepts a vectorized triangle and a
+ * series of related parameters, then output the final intersection result
+ * reduced to float and Vec3f into `thit` and `ng`
+ * @return bool If there's really an intersection
  */
 EVY_FORCEINLINE bool PlueckerTriangleIntersect1(const TriangleV &vtriangle,
                                                 const Vec3f     &ray_o,

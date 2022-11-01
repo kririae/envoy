@@ -39,11 +39,10 @@ TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
 
       // extract normal
       if (reader.find_normal(indexes)) {
-        mesh.vertex_normals =
-            std::span{resource.alloc<Vec3f[], 16>(mesh.num_vertices),
-                      mesh.num_vertices};
+        mesh.vertex_normals = std::span{
+            resource.alloc<Vec3f[], 16>(mesh.num_vertices), mesh.num_vertices};
         reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
-                                  mesh.vertex_normals.data());
+                                  mesh.vertex_normals->data());
         Info("normal found in ply file");
       } else {
         Info("normal not found in ply file");
@@ -51,11 +50,10 @@ TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource) {
 
       // extract UV
       if (reader.find_texcoord(indexes)) {
-        mesh.vertex_uv =
-            std::span{resource.alloc<Vec2f[], 16>(mesh.num_vertices),
-                      mesh.num_vertices};
+        mesh.vertex_uv = std::span{
+            resource.alloc<Vec2f[], 16>(mesh.num_vertices), mesh.num_vertices};
         reader.extract_properties(indexes, 2, miniply::PLYPropertyType::Float,
-                                  mesh.vertex_uv.data());
+                                  mesh.vertex_uv->data());
       }
 
       got_verts = true;

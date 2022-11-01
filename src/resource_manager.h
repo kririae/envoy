@@ -8,6 +8,7 @@
 
 #include "envoy_common.h"
 #include "pages.h"
+#include "stats.h"
 
 EVY_NAMESPACE_BEGIN
 
@@ -60,6 +61,7 @@ struct GResource {
                  args)...);  // instead of placement new and new_object
     m_destructors.emplace(static_cast<ptr_t>(mem),
                           new detail_::Destructor<T>(mem));
+    stats::RecResourceAllocateInfo(sizeof(T));
     return mem;
   }
 
@@ -92,6 +94,7 @@ struct GResource {
     }  // if constexpr
     m_destructors.emplace(static_cast<ptr_t>(mem),
                           new detail_::ArrayDestructor<T>(mem, n));
+    stats::RecResourceAllocateInfo(sizeof(T_) * n);
     return mem;
   }
 

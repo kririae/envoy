@@ -304,6 +304,21 @@ EVY_FORCEINLINE decltype(auto) Min(const T &x, const T &y) {
   return linalg::min(x, y);
 }
 
+template <typename T>
+EVY_FORCEINLINE decltype(auto) GetGB(const T &x) {
+  return static_cast<double>(x) / 1024 / 1024 / 1024;
+}
+
+template <typename T>
+EVY_FORCEINLINE decltype(auto) GetMB(const T &x) {
+  return static_cast<double>(x) / 1024 / 1024;
+}
+
+template <typename T>
+EVY_FORCEINLINE decltype(auto) GetKB(const T &x) {
+  return static_cast<double>(x) / 1024;
+}
+
 EVY_NAMESPACE_END
 
 #endif
