@@ -9,6 +9,7 @@
 #include "envoy.h"
 #include "envoy_common.h"
 #include "geometry.h"
+#include "intersector.h"
 #include "math_aliases.h"
 
 EVY_NAMESPACE_BEGIN
@@ -98,7 +99,7 @@ EVY_FORCEINLINE RTCDevice EmbreeInitializeDevice() {
 
 auto SurfaceArea(const BBox3f &x) {
   auto sides = x.upper - x.lower;
-  return sides.x * sides.y * sides.z;
+  return 2 * (sides.x * sides.y + sides.y * sides.z + sides.z * sides.z);
 }
 
 auto Center(const TriangleVPack &x) {
@@ -207,7 +208,9 @@ void BaseBvh::build() {
   m_root = recursiveBuilder(m_packs, 0);
 }
 
-bool BaseBvh::intersect(BvhRayHit &rayhit) {}
+bool BaseBvh::intersect(BvhRayHit &rayhit) {
+  return recursiveIntersect(m_root, rayhit);
+}
 
 BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
                                          int depth) {
@@ -217,7 +220,7 @@ BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
   for (auto &pack : packs) bound = BBox3f::merge(bound, pack.bound());
   Node *node = m_resource.alloc<Node>();
 
-  if (packs.size() == 1) {
+  if (packs.size() <= 1) {
     node->bound = bound;
     node->pack  = packs;
     return node;
@@ -288,13 +291,30 @@ BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
     return node;
   }
 
-  node->left = recursiveBuilder(std::span{packs.begin(), mid_pack}, depth + 1);
-  node->right =
-      recursiveBuilder(std::span{mid_pack + 1, packs.end()}, depth + 1);
+  node->bound = bound;
+  node->left  = recursiveBuilder(std::span{packs.begin(), mid_pack}, depth + 1);
+  node->right = recursiveBuilder(std::span{mid_pack, packs.end()}, depth + 1);
   return node;
 }
 
-bool BaseBvh::recursiveIntersect(Node *node, BvhRayHit &rayhit) {}
+bool BaseBvh::recursiveIntersect(Node *node, BvhRayHit &rayhit) {
+  float tnear, tfar;
+  bool  inter =
+      BoundIntersect1(node->bound, rayhit.ray_o, rayhit.ray_d, tnear, tfar);
+  if (!inter || rayhit.tfar < tnear) return false;
+
+  if (!node->pack.empty()) {
+    bool hit = false;
+    for (auto &pack : node->pack) hit |= pack.intersect(rayhit);
+    return hit;
+  }
+
+  bool res_left = false, res_right = false;
+  if (node->left != nullptr) res_left = recursiveIntersect(node->left, rayhit);
+  if (node->right != nullptr)
+    res_right = recursiveIntersect(node->right, rayhit);
+  return res_left || res_right;
+}
 
 EmbreeBvh::EmbreeBvh(const TriangleMesh &mesh, GResource &resource) {
   m_device = detail_::EmbreeInitializeDevice();

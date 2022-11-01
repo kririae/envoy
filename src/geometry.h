@@ -30,7 +30,11 @@ public:
     return *this;
   }
 
-  EVY_FORCEINLINE bool empty() {
+  EVY_FORCEINLINE bool operator==(const BBox &other) const {
+    return lower == other.lower && upper == other.lower;
+  }
+
+  EVY_FORCEINLINE bool empty() const {
     for (int i = 0; i < vec_type<T>::size; ++i)
       if (lower[i] > upper[i]) return true;
     return false;

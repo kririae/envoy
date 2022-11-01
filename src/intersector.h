@@ -1,6 +1,7 @@
 #ifndef __INTERSECTOR_H__
 #define __INTERSECTOR_H__
 
+#include "envoy.h"
 #include "envoy_common.h"
 #include "geometry.h"
 #include "math_aliases.h"
@@ -26,6 +27,33 @@ EVY_FORCEINLINE Vec3<T> StableTriangleNormal(const Vec3<T> &a, const Vec3<T> &b,
           Select(sz, cross_ab.z, cross_bc.z)};
 }
 }  // namespace detail_
+
+/**
+ * Intersect AABB with a ray
+ */
+EVY_FORCEINLINE bool BoundIntersect1(const Vec3f &lower, const Vec3f &upper,
+                                     const Vec3f &ray_o, const Vec3f &ray_d,
+                                     float &tnear, float &tfar) {
+  float t0 = 0, t1 = std::numeric_limits<float>::max();
+  for (int i = 0; i < 3; ++i) {
+    float inv_ray_dir = 1 / ray_d[i];
+    float t_near      = (lower[i] - ray_o[i]) * inv_ray_dir;
+    float t_far       = (upper[i] - ray_o[i]) * inv_ray_dir;
+    if (t_near > t_far) std::swap(t_near, t_far);
+    t0 = t_near > t0 ? t_near : t0;
+    t1 = t_far < t1 ? t_far : t1;
+    if (t0 >= t1) return false;
+  }
+
+  tnear = t0, tfar = t1;
+  return true;
+}
+
+EVY_FORCEINLINE bool BoundIntersect1(const BBox3f &bound, const Vec3f &ray_o,
+                                     const Vec3f &ray_d, float &tnear,
+                                     float &tfar) {
+  return BoundIntersect1(bound.lower, bound.upper, ray_o, ray_d, tnear, tfar);
+}
 
 /**
  * @brief Intersect TriangleV with a single ray

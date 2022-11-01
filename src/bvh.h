@@ -34,7 +34,7 @@ struct alignas(16) BvhRayHit {
 struct TriangleVPack /* : public SysPage<TriangleV> */ {
 public:
   using triangle_type               = TriangleV;
-  static constexpr std::size_t size = 128;
+  static constexpr std::size_t size = 1; /* ??? */
 
   EVY_FORCEINLINE        TriangleVPack() = default;
   EVY_FORCEINLINE        TriangleVPack(const std::span<TriangleV> &triangles);
