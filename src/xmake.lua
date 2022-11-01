@@ -18,6 +18,7 @@ target("envoy.core")
     "onetbb", --[[ general requirements ]]
     "miniply",
     "linalg",
+    "glm",
     "xsimd",
     "zpp_bits",
     "lz4",
