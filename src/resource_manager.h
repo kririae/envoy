@@ -99,6 +99,34 @@ struct GResource {
   }
 
   /**
+   * @brief dealloc the memories related to the pointer and invoke the
+   * destructors
+   *
+   * @tparam T
+   * @param ptr
+   */
+  template <typename T>
+  void dealloc(T *ptr) {
+    auto allocator = std::pmr::polymorphic_allocator<T>(&m_mem_resource);
+    auto iterator  = m_destructors.find(ptr);
+    if (iterator == m_destructors.end()) return;
+
+    detail_::DestructorBase *dbase = iterator->second;
+    detail_::Destructor<T>  *d = dynamic_cast<detail_::Destructor<T>>(dbase);
+    if (d != nullptr) {
+      // the DestructorBase is Destructor
+      allocator.deallocate_bytes(ptr, sizeof(T));
+    } else {
+      detail_::ArrayDestructor<T> *darray =
+          dynamic_cast<detail_::ArrayDestructor<T>>(dbase);
+      allocator.deallocate_bytes(ptr, sizeof(T) * darray->m_n);
+    }
+
+    delete dbase;
+    m_destructors.erase(iterator);  // then destructor is invoked
+  }
+
+  /**
    * @brief Deallocate and destruct all resource allocated
    */
   void release() {

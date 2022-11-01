@@ -51,8 +51,6 @@ private:
  * @return TriangleMesh
  */
 TriangleMesh MakeTriangleMesh(const std::string &path, GResource &resource);
-std::span<SysPage<TriangleV>> MakeTrianglePages(const TriangleMesh &mesh,
-                                                GResource          &resource);
 
 EVY_NAMESPACE_END
 

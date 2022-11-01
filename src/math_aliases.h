@@ -182,6 +182,23 @@ EVY_FORCEINLINE decltype(auto) None(const T &x) {
   return xs::none(x);
 }
 
+// @note from
+// https://github.com/facebookincubator/velox/blob/main/velox/common/base/SimdUtil-inl.h
+template <typename T, typename A>
+xsimd::batch_bool<T, A> LeadingMask(int n, const A &) {
+  constexpr int     N     = xsimd::batch_bool<T, A>::size;
+  static const auto kMemo = ({
+    std::array<xsimd::batch_bool<T, A>, N> memo;
+    bool                                   tmp[N]{};
+    for (int i = 0; i < N; ++i) {
+      memo[i] = xsimd::batch_bool<T, A>::load_unaligned(tmp);
+      tmp[i]  = true;
+    }
+    memo;
+  });
+  return (n >= N) ? xsimd::batch_bool<T, A>(true) : kMemo[n];
+}
+
 /// General Operations
 template <typename T>
 EVY_FORCEINLINE decltype(auto) Msub(const T &a, const T &b, const T &c) {
