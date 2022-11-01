@@ -95,6 +95,16 @@ EVY_FORCEINLINE RTCDevice EmbreeInitializeDevice() {
   rtcSetDeviceErrorFunction(device, EmbreeErrorFunction, nullptr);
   return device;
 }
+
+auto SurfaceArea(const BBox3f &x) {
+  auto sides = x.upper - x.lower;
+  return sides.x * sides.y * sides.z;
+}
+
+auto Center(const TriangleVPack &x) {
+  const auto bound = x.bound();
+  return (bound.lower + bound.upper) / 2;
+}
 }  // namespace detail_
 
 TriangleVPack::TriangleVPack(const std::span<TriangleV> &triangles) {
@@ -187,6 +197,104 @@ bool SerialBvh::intersect(BvhRayHit &rayhit) {
 
   return hit;
 }
+
+BaseBvh::BaseBvh(TriangleMesh &mesh, GResource &resource)
+    : m_mesh(mesh),
+      m_resource(resource),
+      m_packs(MakeTrianglePacksFromZOrderCurve(mesh, resource)) {}
+
+void BaseBvh::build() {
+  m_root = recursiveBuilder(m_packs, 0);
+}
+
+bool BaseBvh::intersect(BvhRayHit &rayhit) {}
+
+BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
+                                         int depth) {
+  if (packs.empty()) return nullptr;
+
+  auto bound = packs[0].bound();
+  for (auto &pack : packs) bound = BBox3f::merge(bound, pack.bound());
+  Node *node = m_resource.alloc<Node>();
+
+  if (packs.size() == 1) {
+    node->bound = bound;
+    node->pack  = packs;
+    return node;
+  }
+
+  int                            dim         = depth % 3;
+  constexpr int                  num_buckets = 16;
+  std::pair<BBox3f, std::size_t> buckets[num_buckets], prefix[num_buckets],
+      suffix[num_buckets];
+  float                              cost[num_buckets];
+  std::span<TriangleVPack>::iterator mid_pack;
+
+  assert(bound.isValid());
+  for (auto &pack : packs) {
+    int b = std::floor(num_buckets * ((detail_::Center(pack) - bound.lower) /
+                                      (bound.upper - bound.lower))[dim]);
+    assert(0 <= b && b < num_buckets);
+    buckets[b].first = BBox3f::merge(buckets[b].first, pack.bound());
+    buckets[b].second++;
+  }
+
+  // Run inclusive_sum in two directions
+  prefix[0] = buckets[0];
+  for (int i = 1; i < num_buckets; ++i) {
+    prefix[i]       = prefix[i - 1];
+    prefix[i].first = BBox3f::merge(prefix[i].first, buckets[i].first);
+    prefix[i].second += buckets[i].second;
+  }
+
+  suffix[num_buckets - 1] = buckets[num_buckets - 1];
+  for (int i = num_buckets - 2; i >= 0; --i) {
+    suffix[i]       = suffix[i + 1];
+    suffix[i].first = BBox3f::merge(suffix[i].first, buckets[i].first);
+    suffix[i].second += buckets[i].second;
+  }
+
+  float min_cost       = std::numeric_limits<float>::max();
+  int   min_cost_index = 0;
+  for (int i = 1; i < num_buckets - 1; ++i) {
+    cost[i] =
+        1.0 / 8 +
+        (detail_::SurfaceArea(prefix[i].first) * prefix[i].second +
+         detail_::SurfaceArea(suffix[i + 1].first) * suffix[i + 1].second) /
+            detail_::SurfaceArea(bound);
+    assert(prefix[i].second + suffix[i + 1].second == n_triangles);
+    if (cost[i] < min_cost) {
+      min_cost       = cost[i];
+      min_cost_index = i;
+    }
+  }
+
+  // Here, we know that we'll break at i's bucket
+  float no_partition_cost = packs.size();
+  if (min_cost < no_partition_cost) {
+    mid_pack = std::partition(
+        packs.begin(), packs.end(),
+        [&bound, dim, min_cost_index,
+         num_buckets](const TriangleVPack &t) -> bool {
+          int b = std::floor(num_buckets * ((detail_::Center(t) - bound.lower) /
+                                            (bound.upper - bound.lower))[dim]);
+          assert(0 <= b && b < num_buckets);
+          return b <= min_cost_index;
+        });
+  } else {
+    // Create the leaf node
+    node->bound = bound;
+    node->pack  = packs;
+    return node;
+  }
+
+  node->left = recursiveBuilder(std::span{packs.begin(), mid_pack}, depth + 1);
+  node->right =
+      recursiveBuilder(std::span{mid_pack + 1, packs.end()}, depth + 1);
+  return node;
+}
+
+bool BaseBvh::recursiveIntersect(Node *node, BvhRayHit &rayhit) {}
 
 EmbreeBvh::EmbreeBvh(const TriangleMesh &mesh, GResource &resource) {
   m_device = detail_::EmbreeInitializeDevice();

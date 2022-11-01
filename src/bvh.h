@@ -46,8 +46,8 @@ public:
   triangle_type m_triangles[size];
 };
 
-std::span<TriangleVPack> MakeTrianglePacksFromZOrderCurve(
-    const TriangleMesh &mesh, GResource &resource);
+std::span<TriangleVPack> MakeTrianglePacksFromZOrderCurve(TriangleMesh &mesh,
+                                                          GResource &resource);
 
 class BvhBase {
 public:
@@ -59,7 +59,7 @@ public:
 
 class SerialBvh : public BvhBase {
 public:
-  SerialBvh(const TriangleMesh &mesh, GResource &resource)
+  SerialBvh(TriangleMesh &mesh, GResource &resource)
       : m_mesh(mesh),
         m_resource(resource),
         m_triangles(detail_::CastMeshToTriangleV(mesh, resource)) {}
@@ -72,8 +72,34 @@ private:
   BBox3f               m_bound;
   std::span<TriangleV> m_triangles;
 
-  const TriangleMesh &m_mesh;
-  const GResource    &m_resource;
+  TriangleMesh &m_mesh;
+  GResource    &m_resource;
+};
+
+class BaseBvh : public BvhBase {
+public:
+  struct Node {
+    BBox3f bound;
+    Node  *left{nullptr}, *right{nullptr};
+
+    std::span<TriangleVPack> pack;
+  };
+
+  BaseBvh(TriangleMesh &mesh, GResource &resource);
+  ~BaseBvh() override = default;
+
+  BBox3f getBound() const override { return m_root->bound; }
+  void   build() override;
+  bool   intersect(BvhRayHit &rayhit) override;
+
+private:
+  Node                    *m_root;
+  std::span<TriangleVPack> m_packs;
+  TriangleMesh            &m_mesh;
+  GResource               &m_resource;
+
+  Node *recursiveBuilder(const std::span<TriangleVPack> &packs, int depth);
+  bool  recursiveIntersect(Node *node, BvhRayHit &rayhit);
 };
 
 class EmbreeBvh : public BvhBase {

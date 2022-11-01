@@ -40,7 +40,6 @@ public:
     return BBox(Min(a.lower, b.lower), Max(a.upper, b.upper));
   }
 
-private:
   T lower{FLOAT_INF}, upper{FLOAT_MINUS_INF};
 };
 
