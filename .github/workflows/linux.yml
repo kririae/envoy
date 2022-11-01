@@ -21,22 +21,22 @@ jobs:
         uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: latest
-          actions-cache-folder: ~/.xmake-setup-cache
+          actions-cache-folder: .xmake-setup-cache
       - name: Cache xmake packages and compilation
+        id: cache-xmake-packages
         uses: actions/cache@v3
         env:
-          cache-name: cache-envoy-xmake
+          cache-name: cache-xmake-packages
         with:
           path: |
-            ~/.xmake/cache
-            ~/.xmake/packages
-            ~/.xmake-setup-cache
+            /home/runner/.config/.xmake/cache/
+            /home/runner/.config/.xmake/packages/
+            /home/runner/work/envoy/envoy/.xmake-setup-cache
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/xmake.lua') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
       - name: XMake config
-        run: 'xmake config --clean --yes' 
+        run: 'xmake config --clean --yes -v'
       - name: XMake build
         run: 'xmake build --warning --yes -vD'
+
