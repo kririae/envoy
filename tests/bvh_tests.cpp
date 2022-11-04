@@ -20,7 +20,7 @@ TEST(bvh, geometry) {
   bvh.build();
   bvh_ref.build();
 
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < 1; ++i) {
     BvhRayHit rayhit1, rayhit2;
     rayhit1.ray_o = Vec3f{0.0};
     rayhit1.ray_d = Normalize(Vec3f{rng.get1D(), rng.get1D(), rng.get1D()});

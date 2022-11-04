@@ -12,3 +12,4 @@ compile_commands.json
 assets/*.ply
 perf.data
 perf.data.old
+gmon.out

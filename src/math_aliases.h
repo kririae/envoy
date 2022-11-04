@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <limits>
 #include <type_traits>
+#include <xsimd/types/xsimd_sse2_register.hpp>
 
 #include "envoy.h"
 #include "xsimd/xsimd.hpp"
@@ -60,6 +61,17 @@ struct vec_type<xs::batch<T, A>> {
   static constexpr std::size_t size = xs::batch<T, A>::size;
 };
 
+template <typename T>
+struct batch_type;
+
+template <typename T, typename A>
+struct batch_type<xs::batch<T, A>> {
+  using arch_type  = A;
+  using value_type = T;
+
+  static constexpr std::size_t size = xs::batch<T, A>::size;
+};
+
 /// a wrapper for XSIMD's operators presented in
 /// https://xsimd.readthedocs.io/en/latest/api/reducer_index.html
 /// to make the code not that intrusive, we'll not specify the width as an
@@ -99,7 +111,12 @@ EVY_FORCEINLINE decltype(auto) Abs(const T &x) {
 // Non-linear
 template <detail_::XsimdVector T>
 EVY_FORCEINLINE decltype(auto) Sqrt(const T &x) {
-  return xs::sqrt(x);
+  if constexpr (std::is_same_v<typename batch_type<T>::arch_type,
+                               xs::generic>) {
+    return 0;
+  } else {
+    return xs::sqrt(x);
+  }
 }
 
 template <detail_::XsimdVector T>

@@ -112,13 +112,14 @@ struct GResource {
     if (iterator == m_destructors.end()) return;
 
     detail_::DestructorBase *dbase = iterator->second;
-    detail_::Destructor<T>  *d = dynamic_cast<detail_::Destructor<T>>(dbase);
+    detail_::Destructor<T>  *d = dynamic_cast<detail_::Destructor<T> *>(dbase);
     if (d != nullptr) {
       // the DestructorBase is Destructor
+      assert(ptr == d->m_p);
       allocator.deallocate_bytes(ptr, sizeof(T));
     } else {
-      detail_::ArrayDestructor<T> *darray =
-          dynamic_cast<detail_::ArrayDestructor<T>>(dbase);
+      detail_::ArrayDestructor<T[]> *darray =
+          dynamic_cast<detail_::ArrayDestructor<T[]> *>(dbase);
       allocator.deallocate_bytes(ptr, sizeof(T) * darray->m_n);
     }
 

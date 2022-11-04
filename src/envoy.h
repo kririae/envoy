@@ -1,8 +1,6 @@
 #ifndef __ENVOY_H__
 #define __ENVOY_H__
 
-// #include <fmt/core.h>
-// #include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 
@@ -36,8 +34,8 @@
     spdlog::error(__VA_ARGS__); \
   } while (false)
 
-// #define EVY_FORCEINLINE __always_inline
-#define EVY_FORCEINLINE inline
+#define EVY_FORCEINLINE __always_inline
+// #define EVY_FORCEINLINE inline
 
 #ifndef EVY_TEST_ASSET_PATH
 #define EVY_TEST_ASSET_PATH "."

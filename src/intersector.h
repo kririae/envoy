@@ -6,6 +6,7 @@
 #include "geometry.h"
 #include "math_aliases.h"
 #include "stats.h"
+#include "xsimd/types/xsimd_sse2_register.hpp"
 
 EVY_NAMESPACE_BEGIN
 
@@ -26,6 +27,12 @@ EVY_FORCEINLINE Vec3<T> StableTriangleNormal(const Vec3<T> &a, const Vec3<T> &b,
           Select(sy, cross_ab.y, cross_bc.y),
           Select(sz, cross_ab.z, cross_bc.z)};
 }
+
+EVY_FORCEINLINE xs::batch<float, xs::sse2> CastVec3ToFloatBatch(
+    const Vec3f &a) {
+  alignas(16) std::array<float, 4> aligned_a{a.x, a.y, a.z, 1.0};
+  return xs::batch<float, xs::sse2>::load_aligned(aligned_a.data());
+}
 }  // namespace detail_
 
 /**
@@ -34,19 +41,28 @@ EVY_FORCEINLINE Vec3<T> StableTriangleNormal(const Vec3<T> &a, const Vec3<T> &b,
 EVY_FORCEINLINE bool BoundIntersect1(const Vec3f &lower, const Vec3f &upper,
                                      const Vec3f &ray_o, const Vec3f &ray_d,
                                      float &tnear, float &tfar) {
-  float t0 = 0, t1 = std::numeric_limits<float>::max();
-  for (int i = 0; i < 3; ++i) {
-    float inv_ray_dir = 1 / ray_d[i];
-    float t_near      = (lower[i] - ray_o[i]) * inv_ray_dir;
-    float t_far       = (upper[i] - ray_o[i]) * inv_ray_dir;
-    if (t_near > t_far) std::swap(t_near, t_far);
-    t0 = t_near > t0 ? t_near : t0;
-    t1 = t_far < t1 ? t_far : t1;
-    if (t0 >= t1) return false;
-  }
+  float       t0 = 0, t1 = std::numeric_limits<float>::max();
+  const Vec3f inv_ray_d  = Vec3f{1.0} / ray_d;
+  const Vec3f t_near_vec = (lower - ray_o) * inv_ray_d;
+  const Vec3f t_far_vec  = (upper - ray_o) * inv_ray_d;
+
+  const float t_near0  = t_near_vec[0];
+  const float t_near1  = t_near_vec[1];
+  const float t_near2  = t_near_vec[2];
+  const float t_far0   = t_far_vec[0];
+  const float t_far1   = t_far_vec[1];
+  const float t_far2   = t_far_vec[2];
+  const float t_near_0 = std::min(t_near0, t_far0);
+  const float t_near_1 = std::min(t_near1, t_far1);
+  const float t_near_2 = std::min(t_near2, t_far2);
+  const float t_far_0  = std::max(t_near0, t_far0);
+  const float t_far_1  = std::max(t_near1, t_far1);
+  const float t_far_2  = std::max(t_near2, t_far2);
+  t0                   = std::max({t0, t_near_0, t_near_1, t_near_2});
+  t1                   = std::min({t1, t_far_0, t_far_1, t_far_2});
 
   tnear = t0, tfar = t1;
-  return true;
+  return t0 < t1;
 }
 
 EVY_FORCEINLINE bool BoundIntersect1(const BBox3f &bound, const Vec3f &ray_o,
