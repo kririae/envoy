@@ -36,7 +36,8 @@
     spdlog::error(__VA_ARGS__); \
   } while (false)
 
-#define EVY_FORCEINLINE __always_inline
+// #define EVY_FORCEINLINE __always_inline
+#define EVY_FORCEINLINE inline
 
 #ifndef EVY_TEST_ASSET_PATH
 #define EVY_TEST_ASSET_PATH "."

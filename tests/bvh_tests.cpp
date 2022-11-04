@@ -13,8 +13,7 @@ using namespace envoy;
 TEST(bvh, geometry) {
   Random    rng;
   GResource resource;
-  auto      mesh =
-      MakeTriangleMesh(__get_asset_path("sphere.ply"), resource);
+  auto      mesh = MakeTriangleMesh(__get_asset_path("sphere.ply"), resource);
 
   auto bvh     = SerialBvh(mesh, resource);
   auto bvh_ref = EmbreeBvh(mesh, resource);
@@ -53,7 +52,7 @@ TEST(bvh, BaseBvh) {
   EXPECT_EQ(bvh.getBound().lower.y, bvh_ref.getBound().lower.y);
   EXPECT_EQ(bvh.getBound().upper.x, bvh_ref.getBound().upper.x);
 
-  for (int i = 0; i < 100000; ++i) {
+  for (int i = 0; i < 500000; ++i) {
     BvhRayHit rayhit1, rayhit2;
     rayhit1.ray_o = Vec3f{0.0};
     rayhit1.ray_d = Normalize(Vec3f{rng.get1D(), rng.get1D(), rng.get1D()});

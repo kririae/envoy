@@ -2,6 +2,7 @@
 
 #include <oneapi/tbb/parallel_sort.h>
 
+#include <algorithm>
 #include <iostream>
 #include <span>
 
@@ -153,13 +154,16 @@ std::span<TriangleVPack> MakeTrianglePacksFromZOrderCurve(TriangleMesh &mesh,
   std::span<Vec3ui> indices_triangle_view{
       reinterpret_cast<Vec3ui *>(mesh.indices.data()), mesh.num_indices / 3};
 
-  // TODO: optimize this sort
   // Sort the triangles by their morton code
   tbb::parallel_sort(
       indices_triangle_view.begin(), indices_triangle_view.end(),
       [&mesh](const Vec3ui &x, const Vec3ui &y) -> bool {
-        return detail_::EncodeMorton3(mesh.vertex_positions[x.x]) <
-               detail_::EncodeMorton3(mesh.vertex_positions[y.x]);
+        return detail_::EncodeMorton3(mesh.vertex_positions[x.x] +
+                                      mesh.vertex_positions[x.y] +
+                                      mesh.vertex_positions[x.z]) <
+               detail_::EncodeMorton3(mesh.vertex_positions[y.x] +
+                                      mesh.vertex_positions[y.y] +
+                                      mesh.vertex_positions[y.z]);
       });
 
   auto triangle_v = detail_::CastMeshToTriangleV(mesh, resource);
@@ -169,6 +173,7 @@ std::span<TriangleVPack> MakeTrianglePacksFromZOrderCurve(TriangleMesh &mesh,
     result[i_triangle_pack] = TriangleVPack{triangle_v.subspan(
         i_triangle_v,
         std::min(trianglev_pack_size, triangle_v.size() - i_triangle_v))};
+
   return result;
 }
 
@@ -214,6 +219,7 @@ bool BaseBvh::intersect(BvhRayHit &rayhit) {
 
 BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
                                          int depth) {
+  using tpack_iterator = std::span<TriangleVPack>::iterator;
   if (packs.empty()) return nullptr;
 
   auto bound = packs[0].bound();
@@ -226,12 +232,24 @@ BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
     return node;
   }
 
-  int                            dim         = depth % 3;
+  const int      dim      = depth % 3;
+  tpack_iterator mid_pack = packs.begin() + packs.size() / 2;
+  std::nth_element(
+      packs.begin(), mid_pack, packs.end(),
+      [dim](const TriangleVPack &a, const TriangleVPack &b) -> bool {
+        return detail_::Center(a)[dim] < detail_::Center(b)[dim];
+      });
+  float mid = detail_::Center(*mid_pack)[dim];
+  mid_pack  = std::partition(packs.begin(), packs.end(),
+                             [mid, dim](const TriangleVPack &a) -> bool {
+                              return detail_::Center(a)[dim] < mid;
+                            });  // std::partition
+
+#if 0
   constexpr int                  num_buckets = 16;
   std::pair<BBox3f, std::size_t> buckets[num_buckets], prefix[num_buckets],
       suffix[num_buckets];
-  float                              cost[num_buckets];
-  std::span<TriangleVPack>::iterator mid_pack;
+  std::array<float, num_buckets> cost;
 
   assert(bound.isValid());
   for (auto &pack : packs) {
@@ -290,6 +308,7 @@ BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
     node->pack  = packs;
     return node;
   }
+#endif
 
   node->bound = bound;
   node->left  = recursiveBuilder(std::span{packs.begin(), mid_pack}, depth + 1);

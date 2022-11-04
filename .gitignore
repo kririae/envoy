@@ -10,3 +10,5 @@ compile_commands.json
 .cache/
 .vscode/
 assets/*.ply
+perf.data
+perf.data.old

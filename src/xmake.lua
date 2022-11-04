@@ -27,7 +27,7 @@ target("envoy.core")
     "cgal",
     { public = true }
   )
-add_includedirs(os.scriptdir(), { public = true })
+  add_includedirs(os.scriptdir(), { public = true })
 
 target("envoy")
   set_kind("binary")
