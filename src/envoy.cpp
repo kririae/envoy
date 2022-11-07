@@ -1,7 +1,3 @@
-#include <bits/chrono.h>
-
-#include <chrono>
-
 #include "bvh.h"
 #include "envoy_common.h"
 #include "geometry.h"
@@ -36,6 +32,7 @@ int main() {
 
     bool _1 = bvh.intersect(rayhit1);
     // bool _2 = bvh_ref.intersect(rayhit2);
+    // assert(_1 == _2);
   }
 
   auto end = std::chrono::high_resolution_clock::now();

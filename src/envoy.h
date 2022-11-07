@@ -6,6 +6,8 @@
 
 #include <filesystem>
 
+#undef NDEBUG
+
 #if !defined(EVY_NAMESPACE_BEGIN)
 #define EVY_NAMESPACE_BEGIN namespace envoy {
 #endif
@@ -34,8 +36,8 @@
     spdlog::error(__VA_ARGS__); \
   } while (false)
 
-#define EVY_FORCEINLINE __always_inline
-// #define EVY_FORCEINLINE inline
+// #define EVY_FORCEINLINE __always_inline
+#define EVY_FORCEINLINE inline
 
 #ifndef EVY_TEST_ASSET_PATH
 #define EVY_TEST_ASSET_PATH "."

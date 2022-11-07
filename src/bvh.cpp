@@ -69,7 +69,7 @@ bool SerialBvh::intersect(BvhRayHit &rayhit) {
 BaseBvh::BaseBvh(TriangleMesh &mesh, GResource &resource)
     : m_mesh(mesh),
       m_resource(resource),
-      m_packs(MakeTrianglePacksFromBVH(mesh, resource)) {}
+      m_packs(envoy::MakeTrianglePacksFromBVH(mesh, resource)) {}
 
 void BaseBvh::build() {
   m_root = recursiveBuilder(m_packs, 0);
@@ -83,17 +83,20 @@ BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
                                          int depth) {
   using tpack_iterator = std::span<TriangleVPack>::iterator;
   if (packs.empty()) return nullptr;
+  assert(packs.data() != nullptr);
 
   auto bound = packs[0].bound();
   for (auto &pack : packs) bound = BBox3f::merge(bound, pack.bound());
   Node *node = m_resource.alloc<Node>();
 
   if (packs.size() <= 1) {
+    assert(packs.size() != 0);
     node->bound = bound;
     node->pack  = packs;
     return node;
   }
 
+  assert(packs.size() >= 2);
   const int      dim      = depth % 3;
   tpack_iterator mid_pack = packs.begin() + packs.size() / 2;
 
@@ -118,7 +121,7 @@ BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
   for (auto &pack : packs) {
     int b = std::floor(num_buckets * ((detail_::Center(pack) - bound.lower) /
                                       (bound.upper - bound.lower))[dim]);
-    assert(0 <= b && b < num_buckets);
+    b     = std::clamp(b, 0, num_buckets - 1);
     buckets[b].first = BBox3f::merge(buckets[b].first, pack.bound());
     buckets[b].second++;
   }
@@ -152,7 +155,6 @@ BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
     }
   }
 
-  // Here, we know that we'll break at i's bucket
   float no_partition_cost = packs.size();
   if (min_cost < no_partition_cost) {
     mid_pack = std::partition(
@@ -161,11 +163,10 @@ BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
          num_buckets](const TriangleVPack &t) -> bool {
           int b = std::floor(num_buckets * ((detail_::Center(t) - bound.lower) /
                                             (bound.upper - bound.lower))[dim]);
-          assert(0 <= b && b < num_buckets);
+          b     = std::clamp(b, 0, num_buckets - 1);
           return b <= min_cost_index;
         });
   } else {
-    // Create the leaf node
     node->bound = bound;
     node->pack  = packs;
     return node;
@@ -194,8 +195,9 @@ bool BaseBvh::recursiveIntersect(Node *node, BvhRayHit &rayhit) {
     for (auto &pack : node->pack) hit |= pack.intersect(rayhit);
     return hit;
   } else {
-    return recursiveIntersect(node->left, rayhit) ||
-           recursiveIntersect(node->right, rayhit);
+    bool res1 = recursiveIntersect(node->left, rayhit);
+    bool res2 = recursiveIntersect(node->right, rayhit);
+    return res1 || res2;
   }
 }
 
