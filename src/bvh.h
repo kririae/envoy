@@ -76,6 +76,7 @@ private:
 
   Node *recursiveBuilder(const std::span<TriangleVPack> &packs, int depth);
   bool  recursiveIntersect(Node *node, BvhRayHit &rayhit);
+  bool  nonRecursiveIntersect(Node *node, BvhRayHit &rayhit);
 };
 
 class EmbreeBvh : public BvhBase {

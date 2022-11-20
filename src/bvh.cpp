@@ -1,6 +1,7 @@
 #include "bvh.h"
 
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include <span>
 
@@ -76,7 +77,8 @@ void BaseBvh::build() {
 }
 
 bool BaseBvh::intersect(BvhRayHit &rayhit) {
-  return recursiveIntersect(m_root, rayhit);
+  // return recursiveIntersect(m_root, rayhit);
+  return nonRecursiveIntersect(m_root, rayhit);
 }
 
 BaseBvh::Node *BaseBvh::recursiveBuilder(const std::span<TriangleVPack> &packs,
@@ -199,6 +201,50 @@ bool BaseBvh::recursiveIntersect(Node *node, BvhRayHit &rayhit) {
     bool res2 = recursiveIntersect(node->right, rayhit);
     return res1 || res2;
   }
+}
+
+bool BaseBvh::nonRecursiveIntersect(Node *node, BvhRayHit &rayhit) {
+  constexpr int STACK_SIZE = 64;
+  if (node == nullptr) return false;
+
+  struct Item {
+    Node *node;
+    float tnear;
+  };
+
+  // Let's traverse on this local stack
+  std::array<Item, STACK_SIZE> stack{};
+
+  int stack_ptr      = 0;
+  stack[++stack_ptr] = Item{node, 0};
+
+  // Manual DFS traversal
+  while (stack_ptr > 0) {
+    // pop the first element
+    Item it = stack[stack_ptr--];
+    if (it.node == nullptr) continue;
+
+    if (rayhit.tfar < it.tnear) {
+      continue;
+    } else if (!it.node->pack.empty()) {
+      // Intersecting leaf node
+      for (auto &pack : it.node->pack) pack.intersect(rayhit);
+    } else {
+      // Perform two intersections
+      float tnear, tfar;
+      bool  inter = BoundIntersect1(it.node->left->bound, rayhit.ray_o,
+                                    rayhit.ray_d, tnear, tfar);
+      if (inter) stack[++stack_ptr] = Item{it.node->left, tnear};
+
+      inter = BoundIntersect1(it.node->right->bound, rayhit.ray_o, rayhit.ray_d,
+                              tnear, tfar);
+      if (inter) stack[++stack_ptr] = Item{it.node->right, tnear};
+    }
+
+    assert(stack_ptr <= STACK_SIZE);
+  }
+
+  return rayhit.hit;
 }
 
 EmbreeBvh::EmbreeBvh(const TriangleMesh &mesh, GResource &resource) {
