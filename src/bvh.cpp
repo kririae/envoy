@@ -268,7 +268,7 @@ RadixBvh::RadixBvh(TriangleMesh &mesh, GResource &resource)
 
 RadixBvh::~RadixBvh() {
   // TODO: memory overhead for simple implementation
-  // m_resource.dealloc(m_radix_packs.data());
+  m_resource.dealloc(m_radix_packs.data());
 }
 
 BBox3f RadixBvh::getBound() const {
@@ -278,8 +278,6 @@ BBox3f RadixBvh::getBound() const {
 void RadixBvh::build() {
   prestage();
   parallelBuilder();
-  auto vec = m_internal_nodes[0].bound.lower;
-  Info("build info: {} {} {}", vec.x, vec.y, vec.z);
 }
 
 bool RadixBvh::intersect(BvhRayHit &rayhit) {
@@ -466,6 +464,9 @@ EmbreeBvh::EmbreeBvh(const TriangleMesh &mesh, GResource &resource) {
 }
 
 EmbreeBvh::~EmbreeBvh() {
+  // Fix memory leak issue
+  if (m_device) rtcReleaseDevice(m_device);
+  if (m_scene) rtcReleaseScene(m_scene);
   Info("Embree BVH is destructed");
 }
 

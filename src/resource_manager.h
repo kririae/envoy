@@ -18,17 +18,19 @@ struct DestructorBase {
 };
 template <typename T>
 requires(!std::is_array_v<T>) struct Destructor : public DestructorBase {
-  Destructor(T *p) : m_p(p) {}
+  Destructor(T *p, size_t alignment) : m_p(p), m_alignment(alignment) {}
   ~Destructor() override { std::destroy_at(m_p); }
-  T *m_p;
+  T          *m_p;
+  std::size_t m_alignment;
 };
 template <typename T, typename T_ = std::remove_extent_t<T>>
 requires(std::is_unbounded_array_v<T>) struct ArrayDestructor
     : public DestructorBase {
-  ArrayDestructor(T_ *p, size_t n) : m_p(p), m_n(n) {}
+  ArrayDestructor(T_ *p, size_t n, size_t alignment)
+      : m_p(p), m_n(n), m_alignment(alignment) {}
   ~ArrayDestructor() override { std::destroy_n(m_p, m_n); }
   T_    *m_p;
-  size_t m_n;
+  size_t m_n, m_alignment;
 };
 };  // namespace detail_
 
@@ -60,7 +62,7 @@ struct GResource {
         mem, std::forward<Args>(
                  args)...);  // instead of placement new and new_object
     m_destructors.emplace(static_cast<ptr_t>(mem),
-                          new detail_::Destructor<T>(mem));
+                          new detail_::Destructor<T>(mem, Align));
     stats::RecResourceAllocateInfo(sizeof(T));
     return mem;
   }
@@ -93,7 +95,7 @@ struct GResource {
         allocator.construct(mem + i, std::forward<Args>(args)...);
     }  // if constexpr
     m_destructors.emplace(static_cast<ptr_t>(mem),
-                          new detail_::ArrayDestructor<T>(mem, n));
+                          new detail_::ArrayDestructor<T>(mem, n, Align));
     stats::RecResourceAllocateInfo(sizeof(T_) * n);
     return mem;
   }
@@ -116,11 +118,13 @@ struct GResource {
     if (d != nullptr) {
       // the DestructorBase is Destructor
       assert(ptr == d->m_p);
-      allocator.deallocate_bytes(ptr, sizeof(T));
+      allocator.deallocate_bytes(ptr, sizeof(T), d->m_alignment);
     } else {
       detail_::ArrayDestructor<T[]> *darray =
           dynamic_cast<detail_::ArrayDestructor<T[]> *>(dbase);
-      allocator.deallocate_bytes(ptr, sizeof(T) * darray->m_n);
+      assert(ptr == darray->m_p);
+      allocator.deallocate_bytes(ptr, sizeof(T) * darray->m_n,
+                                 darray->m_alignment);
     }
 
     delete dbase;
