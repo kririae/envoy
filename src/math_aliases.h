@@ -7,7 +7,6 @@
 #include <glm/glm.hpp>
 #include <limits>
 #include <type_traits>
-#include <xsimd/types/xsimd_sse2_register.hpp>
 
 #include "envoy.h"
 #include "xsimd/xsimd.hpp"
@@ -355,6 +354,17 @@ EVY_FORCEINLINE decltype(auto) GetMB(const T &x) {
 template <typename T>
 EVY_FORCEINLINE decltype(auto) GetKB(const T &x) {
   return static_cast<double>(x) / 1024;
+}
+
+template <typename T>
+EVY_FORCEINLINE decltype(auto) Sign(const T &x) {
+  return x == 0 ? 0 : (x > 0 ? 1 : -1);
+}
+
+EVY_FORCEINLINE uint32_t Next2Pow(uint32_t n) {
+  double   n_ = log2(static_cast<double>(n));
+  uint32_t k  = static_cast<uint32_t>(ceil(n_));
+  return pow(2, k);
 }
 
 EVY_NAMESPACE_END

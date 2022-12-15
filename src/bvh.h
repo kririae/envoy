@@ -4,6 +4,9 @@
 #include <embree3/rtcore.h>
 #include <embree3/rtcore_geometry.h>
 
+#include <array>
+
+#include "envoy.h"
 #include "envoy_common.h"
 #include "geometry.h"
 #include "intersector.h"
@@ -77,6 +80,59 @@ private:
   Node *recursiveBuilder(const std::span<TriangleVPack> &packs, int depth);
   bool  recursiveIntersect(Node *node, BvhRayHit &rayhit);
   bool  nonRecursiveIntersect(Node *node, BvhRayHit &rayhit);
+};
+
+class RadixBvh : public BvhBase {
+public:
+  struct Node {
+    BBox3f bound{};
+    Node  *left{nullptr}, *right{nullptr};
+
+    std::span<TriangleVPack> pack{};
+
+    int     flag{}, direction{}, split_point{}, n_triangles{}, parent{};
+    uint8_t left_node_type : 1 {};   // 0: internal; 1: leaf
+    uint8_t right_node_type : 1 {};  // 0: internal; 1: leaf
+  };
+
+  struct RadixTriangleVPack : public TriangleVPack {
+    uint32_t morton_code, parent;
+  };
+
+  RadixBvh(TriangleMesh &mesh, GResource &resource);
+  ~RadixBvh() override;
+
+  BBox3f getBound() const override;
+  void   build() override;
+  bool   intersect(BvhRayHit &rayhit) override;
+
+private:
+  BBox3f                        m_bound;
+  std::span<TriangleVPack>      m_packs;
+  std::span<RadixTriangleVPack> m_radix_packs; /* converted from m_packs */
+  TriangleMesh                 &m_mesh;
+  GResource                    &m_resource;
+
+  /* implementation-specific nodes */
+  std::span<Node> m_internal_nodes;
+
+  /* pre-processing for radix bvh */
+  void prestage();
+
+  /* build the BVH in parallel */
+  void parallelBuilder();
+
+  /* BVH intersect helper */
+  bool recursiveIntersect(Node *node, BvhRayHit &rayhit);
+
+  /* defined in the original paper */
+  EVY_FORCEINLINE int delta(int i, int j) {
+    if (j < 0 || j >= m_radix_packs.size()) return -1;
+    if (m_radix_packs[i].morton_code == m_radix_packs[j].morton_code)
+      return __builtin_clz(i ^ j) + 32;
+    return __builtin_clz(m_radix_packs[i].morton_code ^
+                         m_radix_packs[j].morton_code);
+  }
 };
 
 class EmbreeBvh : public BvhBase {

@@ -15,7 +15,7 @@ int main() {
   GResource resource;
   auto      mesh = MakeTriangleMesh(__get_asset_path("sphere.ply"), resource);
 
-  auto bvh     = BaseBvh(mesh, resource);
+  auto bvh     = RadixBvh(mesh, resource);
   auto bvh_ref = EmbreeBvh(mesh, resource);
 
   bvh.build();
@@ -32,7 +32,7 @@ int main() {
 
     bool _1 = bvh.intersect(rayhit1);
     // bool _2 = bvh_ref.intersect(rayhit2);
-    // assert(_1 == _2);
+    // if (_1 != _2) Info("Failed: {}", i);
   }
 
   auto end = std::chrono::high_resolution_clock::now();

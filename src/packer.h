@@ -27,15 +27,28 @@ public:
   BBox3f bound() const { return m_bound; }
   bool   intersect(BvhRayHit &rayhit);
 
-  std::size_t   m_num_valid_triangles;
-  BBox3f        m_bound;
-  triangle_type m_triangles[size];
+  std::size_t                     m_num_valid_triangles;
+  BBox3f                          m_bound;
+  std::array<triangle_type, size> m_triangles;
 };
 
 std::span<TriangleVPack> MakeTrianglePacksFromZOrderCurve(TriangleMesh &mesh,
                                                           GResource &resource);
 std::span<TriangleVPack> MakeTrianglePacksFromBVH(TriangleMesh &mesh,
                                                   GResource    &resource);
+
+EVY_FORCEINLINE uint32_t LeftShift3(uint32_t x) {
+  if (x == (1 << 10)) --x;
+  x = (x | (x << 16)) & 0b00000011000000000000000011111111;
+  x = (x | (x << 8)) & 0b00000011000000001111000000001111;
+  x = (x | (x << 4)) & 0b00000011000011000011000011000011;
+  x = (x | (x << 2)) & 0b00001001001001001001001001001001;
+  return x;
+}
+
+EVY_FORCEINLINE uint32_t EncodeMorton3(const Vec3f &v) {
+  return (LeftShift3(v.z) << 2) | (LeftShift3(v.y) << 1) | LeftShift3(v.x);
+}
 
 EVY_NAMESPACE_END
 
