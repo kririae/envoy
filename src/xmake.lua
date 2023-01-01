@@ -1,5 +1,5 @@
 -- General Requirements
-add_requires("spdlog", "boost", "onetbb", { system = false })
+add_requires("args", "spdlog", "boost", "onetbb", { system = false })
 
 -- Specific Requirements
 add_requires("miniply master", "linalg main", "glm", "xsimd", "zpp_bits v4.4.12", "lz4", { system = false })
@@ -12,6 +12,7 @@ target("envoy.core")
   set_kind("shared")
   add_files("mesh.cpp", "pages.cpp", "bvh.cpp", "stats.cpp", "packer.cpp")
   add_packages(
+    "args",
     "spdlog",
     "boost",
     "onetbb", --[[ general requirements ]]

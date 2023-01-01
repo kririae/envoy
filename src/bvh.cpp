@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <iostream>
 #include <span>
 
@@ -40,6 +41,15 @@ auto Center(const TriangleVPack &x) {
   return (bound.lower + bound.upper) / 2;
 }
 }  // namespace detail_
+
+void BvhBase::build_info() {
+  // just encapsulate the build function and print time
+  const auto begin = std::chrono::high_resolution_clock::now();
+  this->build();
+  const auto end = std::chrono::high_resolution_clock::now();
+  Info("BVH build time: {}",
+       std::chrono::duration_cast<std::chrono::milliseconds>(end - begin));
+}
 
 void SerialBvh::build() {
   m_bound = m_triangles[0].all_bound();

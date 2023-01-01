@@ -61,6 +61,7 @@ struct GResource {
     allocator.construct(
         mem, std::forward<Args>(
                  args)...);  // instead of placement new and new_object
+                             // if (!std::is_trivially_destructible_v<T>)
     m_destructors.emplace(static_cast<ptr_t>(mem),
                           new detail_::Destructor<T>(mem, Align));
     stats::RecResourceAllocateInfo(sizeof(T));

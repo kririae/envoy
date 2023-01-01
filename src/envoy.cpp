@@ -1,3 +1,5 @@
+#include <args.hxx>
+
 #include "bvh.h"
 #include "envoy_common.h"
 #include "geometry.h"
@@ -10,20 +12,48 @@
 
 using namespace envoy;
 
-int main() {
+int main(int argc, char *argv[]) {
+  // command line variables parsing
+  args::ArgumentParser parser(
+      "This is the performance test interface for envoy", "krr.");
+  args::HelpFlag help(parser, "help", "Display help menu", {'h', "help"});
+  args::ValueFlag<std::string> asset_name_arg(
+      parser, "string", "Specify the asset name to load", {'a', "asset-name"});
+  args::ValueFlag<int> num_iter_arg(
+      parser, "integer", "Specify the numer of iterations", {'n', "num-iter"});
+  try {
+    parser.ParseCLI(argc, argv);
+  } catch (args::Help) {
+    std::cout << parser;
+    return 0;
+  } catch (args::ParseError e) {
+    std::cerr << e.what() << std::endl;
+    std::cerr << parser;
+    return 1;
+  } catch (args::ValidationError e) {
+    std::cerr << e.what() << std::endl;
+    std::cerr << parser;
+    return 1;
+  }
+
+  std::string asset_name = "dambreak0.ply";
+  int         num_iter   = 500000;
+  if (asset_name_arg) asset_name = args::get(asset_name_arg);
+  if (num_iter_arg) num_iter = args::get(num_iter_arg);
+
   Random    rng;
   GResource resource;
-  auto      mesh = MakeTriangleMesh(__get_asset_path("sphere.ply"), resource);
+  auto      mesh = MakeTriangleMesh(__get_asset_path(asset_name), resource);
 
   auto bvh     = RadixBvh(mesh, resource);
   auto bvh_ref = EmbreeBvh(mesh, resource);
 
-  bvh.build();
-  bvh_ref.build();
+  bvh.build_info();
+  bvh_ref.build_info();
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  for (int i = 0; i < 500000; ++i) {
+  for (int i = 0; i < num_iter; ++i) {
     BvhRayHit rayhit1, rayhit2;
     rayhit1.ray_o = Vec3f{0.0};
     rayhit1.ray_d = Normalize(Vec3f{rng.get1D(), rng.get1D(), rng.get1D()});

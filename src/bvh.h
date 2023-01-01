@@ -34,6 +34,9 @@ public:
   virtual void   build()                      = 0;
   virtual BBox3f getBound() const             = 0;
   virtual bool   intersect(BvhRayHit &rayhit) = 0;
+
+  /* print the corresponding build info */
+  virtual void build_info();
 };
 
 class SerialBvh : public BvhBase {
